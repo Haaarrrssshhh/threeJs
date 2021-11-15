@@ -35,9 +35,8 @@ scene.add(sphere);
 
 //Light1
 const pointLight = new THREE.PointLight(0xffffff, 0.1);
-pointLight.position.x = 2;
-pointLight.position.y = 3;
-pointLight.position.z = 4;
+pointLight.position.set(2, 3, 4);
+
 scene.add(pointLight);
 
 //Light2
@@ -81,11 +80,20 @@ light3.addColor(light3Color, "color").onChange(() => {
   pointLight3.color.set(light3Color.color);
 });
 
-// const pointLightHelper3 = new THREE.PointLightHelper(pointLight3, 1);
-// scene.add(pointLightHelper3);
-/**
- * Sizes
- */
+function addStar() {
+  const geometry = new THREE.SphereGeometry(0.25, 24, 24);
+  const material = new THREE.MeshStandardMaterial({ color: "0xffffff" });
+  const star = new THREE.Mesh(geometry, material);
+
+  const [x, y, z] = Array(3)
+    .fill()
+    .map(() => THREE.MathUtils.randFloatSpread(100));
+  star.position.set(x, y, z);
+  scene.add(star);
+}
+
+Array(200).fill().forEach(addStar);
+
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
@@ -127,7 +135,7 @@ scene.add(camera);
 /**
  * Renderer
  */
-const renderer = new THREE.WebGLRenderer({
+const renderer = new THREE.WebGL1Renderer({
   canvas: canvas,
   alpha: true,
 });
@@ -138,14 +146,32 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
  * Animate
  */
 
+document.addEventListener("mousemove", onDocumentMouseMove);
+let mouseX = 0;
+let mouseY = 0;
+
+let targetX = 0;
+let targetY = 0;
+const windowX = window.innerWidth / 2;
+const windowY = window.innerWidth / 2;
+function onDocumentMouseMove(event) {
+  mouseX = event.clientX - windowX;
+  mouseY = event.clientY - windowY;
+}
+
 const clock = new THREE.Clock();
 
 const tick = () => {
+  targetX = mouseX * 0.001;
+  targetY = mouseY * 0.001;
+
   const elapsedTime = clock.getElapsedTime();
 
   // Update objects
   // sphere.rotation.x = 0.5 * elapsedTime;
   sphere.rotation.y = 0.5 * elapsedTime;
+  sphere.rotation.y += 0.5 * (targetX - sphere.rotation.y);
+  sphere.rotation.x += 0.5 * (targetY - sphere.rotation.x);
   // sphere.rotation.z = 0.5 * elapsedTime;
 
   // Update Orbital Controls
